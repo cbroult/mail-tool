@@ -52,9 +52,10 @@ mail-tool/
     fixtures/
       mail_tool.yml              # sample config for tests
   features/
+    authorize.feature            # BDD scenarios for OAuth2 authorize command
     configuration.feature        # BDD scenarios for config file handling
     help.feature                 # BDD scenarios for CLI help output
-    list_folders.feature         # BDD scenarios for folder listing
+    list_folders.feature         # BDD scenarios for folder listing (incl. OAuth2)
     rename_folders.feature       # BDD scenarios for folder renaming
     support/
       env.rb                     # Aruba configuration
@@ -143,8 +144,9 @@ All unit tests mock `Net::IMAP` — no real IMAP server needed.
 BDD specification-by-example tests that exercise the full CLI as a subprocess.
 
 - **IMAP mocking**: The `MAIL_TOOL_MOCK_IMAP` env var points to a JSON file containing mock state (folders, rename errors). `Connection.connect` checks for this env var and uses `Testing::MockImap` instead of a real IMAP connection when set.
+- **authorize.feature**: authorize command help, rejects non-xoauth2 config, rejects missing oauth2 settings
 - **configuration.feature**: default config path, `--config` override, auto-creation on first run, CLI flag precedence
-- **list_folders.feature**: all folders, alphabetical sorting, regex filtering, empty mailbox, missing config
+- **list_folders.feature**: all folders, alphabetical sorting, regex filtering, empty mailbox, missing config, OAuth2 auth with valid tokens, missing tokens error
 - **rename_folders.feature**: dry-run, live rename with `--yes`, backreferences, no matches, per-folder errors, invalid regex
 
 ## Code Style
