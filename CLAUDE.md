@@ -111,7 +111,7 @@ mail-tool rename "^Temp\." "Archive.Temp." --yes           # skip confirmation
 
 ### Global Options (all commands)
 
-`--server/-s`, `--port/-p`, `--username/-u`, `--password/-P`, `--ssl`, `--config/-c`
+`--server/-s`, `--port/-p`, `--username/-u`, `--password/-P`, `--ssl`, `--config/-c`, `--auth-type`, `--token-store`
 
 ## Error Handling
 

@@ -114,9 +114,29 @@ RSpec.describe MailTool::CLI do
 
       template_path = File.join(fake_home, ".config", "mail-tool", "config.yml")
       expect(File.exist?(template_path)).to be true
-      content = YAML.safe_load_file(template_path)
+
+      raw = File.read(template_path)
+      content = YAML.safe_load(raw)
       expect(content["server"]).to eq("imap.example.com")
+      expect(raw).to include("# auth_type: xoauth2")
+      expect(raw).to include("# oauth2:")
+      expect(raw).to include("#   client_id:")
       FileUtils.rm_rf(fake_home)
+    end
+
+    it "passes --auth-type flag as config override" do
+      allow(mock_imap).to receive(:list).with("", "*").and_return([mailbox("INBOX")])
+
+      expect(MailTool::Configuration).to receive(:load).with(
+        config_path: config_path,
+        overrides: hash_including(auth_type: "xoauth2")
+      ).and_call_original
+
+      capture_stdout do
+        described_class.start(["list", "--config", config_path, "--auth-type", "xoauth2"])
+      end
+    rescue SystemExit
+      nil
     end
   end
 

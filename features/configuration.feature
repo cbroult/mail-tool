@@ -9,6 +9,8 @@ Feature: Configuration
     Then the output should contain "Config file created at"
     And the output should contain "edit it with your IMAP settings"
     And the exit status should be 1
+    And the file ".config/mail-tool/config.yml" should contain "# auth_type: xoauth2"
+    And the file ".config/mail-tool/config.yml" should contain "# oauth2:"
 
   Scenario: Loads config from default path
     Given a config file at the default location with valid credentials

@@ -13,6 +13,7 @@ module MailTool
     class_option :password,    aliases: "-P", type: :string, desc: "IMAP password"
     class_option :ssl,         type: :boolean, desc: "Use SSL/TLS"
     class_option :config,      aliases: "-c", type: :string, desc: "Path to config file"
+    class_option :auth_type,   type: :string, desc: "Authentication type (basic or xoauth2)"
     class_option :token_store, type: :string, desc: "Path to OAuth2 token store file"
 
     desc "list", "List mail folders"
@@ -103,6 +104,23 @@ module MailTool
       abort_with(e.message)
     end
 
+    DEFAULT_CONFIG_TEMPLATE = <<~YAML.freeze
+      server: imap.example.com
+      port: 993
+      username: user@example.com
+      password: secret
+      ssl: true
+      # auth_type: xoauth2
+      # token_store: ~/.config/mail-tool/tokens.yml
+      # oauth2:
+      #   client_id: your-client-id
+      #   client_secret: your-client-secret
+      #   authorize_url: https://provider.example.com/oauth2/auth
+      #   token_url: https://provider.example.com/oauth2/token
+      #   scope: mail-r mail-w
+      #   redirect_port: 8080
+    YAML
+
     private
 
     def build_config
@@ -141,13 +159,7 @@ module MailTool
 
     def create_default_config(path)
       FileUtils.mkdir_p(File.dirname(path))
-      File.write(path, YAML.dump(
-                         "server" => "imap.example.com",
-                         "port" => 993,
-                         "username" => "user@example.com",
-                         "password" => "secret",
-                         "ssl" => true
-                       ))
+      File.write(path, DEFAULT_CONFIG_TEMPLATE)
       say "Config file created at #{path} — edit it with your IMAP settings."
       exit 1
     end
@@ -160,6 +172,7 @@ module MailTool
         password: options[:password],
         ssl: options[:ssl]
       }
+      overrides[:auth_type] = options[:auth_type] if options[:auth_type]
       overrides[:token_store] = options[:token_store] if options[:token_store]
       overrides
     end
