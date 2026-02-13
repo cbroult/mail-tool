@@ -13,7 +13,7 @@ A Ruby CLI tool that connects to IMAP servers to list and rename mail folders. T
 | CLI framework | Thor (~> 1.5) |
 | Unit testing | RSpec (~> 3.13) |
 | BDD / Acceptance testing | Cucumber (~> 9.0) + Aruba (~> 2.3) |
-| Credentials | Config file (`~/.mail-tool.yml`) + CLI flags (flags override config) |
+| Credentials | Config file (`~/.config/mail-tool/config.yml`) + CLI flags (flags override config) |
 
 ## Project Structure
 
@@ -49,6 +49,7 @@ mail-tool/
     fixtures/
       mail_tool.yml              # sample config for tests
   features/
+    configuration.feature        # BDD scenarios for config file handling
     help.feature                 # BDD scenarios for CLI help output
     list_folders.feature         # BDD scenarios for folder listing
     rename_folders.feature       # BDD scenarios for folder renaming
@@ -67,6 +68,7 @@ mail-tool/
 MailTool (namespace, VERSION, error classes)
   ├── CLI < Thor              — command definitions, output formatting, error handling
   ├── Configuration           — load YAML config, merge with CLI flags, validate
+  │                             Default path: ~/.config/mail-tool/config.yml
   ├── Connection              — Net::IMAP lifecycle (connect/login/yield/logout/disconnect)
   │                             Supports MAIL_TOOL_MOCK_IMAP env var for test injection
   ├── Commands::
@@ -83,9 +85,10 @@ MailTool (namespace, VERSION, error classes)
 ### `mail-tool list [--filter PATTERN]`
 
 ```bash
-mail-tool list                                    # list all folders
+mail-tool list                                    # list all folders (uses default config)
 mail-tool list --filter "^INBOX"                  # filter by regex
 mail-tool list -s imap.gmail.com -u user -P pass  # override config
+mail-tool list --config /path/to/config.yml       # use explicit config file
 ```
 
 Output: table of folder names + attributes, sorted alphabetically.
@@ -110,6 +113,7 @@ mail-tool rename "^Temp\." "Archive.Temp." --yes           # skip confirmation
 
 | Error | Handling |
 |-------|----------|
+| No config file at default path | Auto-create template, print message, exit 1 |
 | Missing config (server/user/pass) | Print message, exit 1 |
 | Connection/SSL/DNS failure | Print message, exit 1 |
 | Auth failure | Print message, exit 1 |
@@ -136,6 +140,7 @@ All unit tests mock `Net::IMAP` — no real IMAP server needed.
 BDD specification-by-example tests that exercise the full CLI as a subprocess.
 
 - **IMAP mocking**: The `MAIL_TOOL_MOCK_IMAP` env var points to a JSON file containing mock state (folders, rename errors). `Connection.connect` checks for this env var and uses `Testing::MockImap` instead of a real IMAP connection when set.
+- **configuration.feature**: default config path, `--config` override, auto-creation on first run, CLI flag precedence
 - **list_folders.feature**: all folders, alphabetical sorting, regex filtering, empty mailbox, missing config
 - **rename_folders.feature**: dry-run, live rename with `--yes`, backreferences, no matches, per-folder errors, invalid regex
 
