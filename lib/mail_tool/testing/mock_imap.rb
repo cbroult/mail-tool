@@ -20,6 +20,8 @@ module MailTool
         end
       end
 
+      def login(_username, _password); end
+      def authenticate(_mechanism, _username, _token); end
       def logout; end
       def disconnect; end
     end

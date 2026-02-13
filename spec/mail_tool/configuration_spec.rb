@@ -1,5 +1,6 @@
 RSpec.describe MailTool::Configuration do
   let(:fixture_path) { File.expand_path("../fixtures/mail_tool.yml", __dir__) }
+  let(:oauth2_fixture_path) { File.expand_path("../fixtures/mail_tool_oauth2.yml", __dir__) }
 
   describe ".load" do
     it "loads settings from a YAML config file" do
@@ -82,6 +83,101 @@ RSpec.describe MailTool::Configuration do
       config = described_class.load(config_path: fixture_path)
 
       expect { config.validate! }.not_to raise_error
+    end
+  end
+
+  describe "OAuth2 configuration" do
+    it "defaults auth_type to basic" do
+      config = described_class.load(config_path: fixture_path)
+
+      expect(config.auth_type).to eq("basic")
+    end
+
+    it "defaults token_store to ~/.mail-tool-tokens.yml" do
+      config = described_class.load(config_path: fixture_path)
+
+      expect(config.token_store).to eq("~/.mail-tool-tokens.yml")
+    end
+
+    it "loads OAuth2 settings from config file" do
+      config = described_class.load(config_path: oauth2_fixture_path)
+
+      expect(config.auth_type).to eq("xoauth2")
+      expect(config.oauth2).to be_a(Hash)
+      expect(config.oauth2["client_id"]).to eq("test-client-id")
+      expect(config.oauth2["client_secret"]).to eq("test-client-secret")
+      expect(config.oauth2["authorize_url"]).to eq("https://api.login.yahoo.com/oauth2/request_auth")
+      expect(config.oauth2["token_url"]).to eq("https://api.login.yahoo.com/oauth2/get_token")
+      expect(config.oauth2["scope"]).to eq("mail-r mail-w")
+      expect(config.oauth2["redirect_port"]).to eq(8089)
+    end
+
+    it "loads token_store path from config file" do
+      config = described_class.load(config_path: oauth2_fixture_path)
+
+      expect(config.token_store).to eq("/tmp/test-tokens.yml")
+    end
+
+    it "does not require password when auth_type is xoauth2" do
+      config = described_class.load(config_path: oauth2_fixture_path)
+
+      expect { config.validate! }.not_to raise_error
+    end
+
+    it "requires oauth2.client_id when auth_type is xoauth2" do
+      config = described_class.load(config_path: oauth2_fixture_path)
+      config.oauth2.delete("client_id")
+
+      expect { config.validate! }.to raise_error(
+        MailTool::ConfigurationError, /oauth2\.client_id is required/
+      )
+    end
+
+    it "requires oauth2.client_secret when auth_type is xoauth2" do
+      config = described_class.load(config_path: oauth2_fixture_path)
+      config.oauth2.delete("client_secret")
+
+      expect { config.validate! }.to raise_error(
+        MailTool::ConfigurationError, /oauth2\.client_secret is required/
+      )
+    end
+
+    it "requires oauth2.authorize_url when auth_type is xoauth2" do
+      config = described_class.load(config_path: oauth2_fixture_path)
+      config.oauth2.delete("authorize_url")
+
+      expect { config.validate! }.to raise_error(
+        MailTool::ConfigurationError, /oauth2\.authorize_url is required/
+      )
+    end
+
+    it "requires oauth2.token_url when auth_type is xoauth2" do
+      config = described_class.load(config_path: oauth2_fixture_path)
+      config.oauth2.delete("token_url")
+
+      expect { config.validate! }.to raise_error(
+        MailTool::ConfigurationError, /oauth2\.token_url is required/
+      )
+    end
+
+    it "requires oauth2 hash when auth_type is xoauth2" do
+      config = described_class.load(
+        config_path: nil,
+        overrides: { server: "s", username: "u", auth_type: "xoauth2" }
+      )
+
+      expect { config.validate! }.to raise_error(
+        MailTool::ConfigurationError, /oauth2\.client_id is required/
+      )
+    end
+
+    it "allows token_store override via CLI flags" do
+      config = described_class.load(
+        config_path: oauth2_fixture_path,
+        overrides: { token_store: "/custom/path.yml" }
+      )
+
+      expect(config.token_store).to eq("/custom/path.yml")
     end
   end
 end

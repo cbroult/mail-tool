@@ -12,6 +12,8 @@ module MailTool
 end
 
 require "mail_tool/configuration"
+require "mail_tool/token_store"
+require "mail_tool/oauth2_flow"
 require "mail_tool/connection"
 require "mail_tool/commands/list_folders"
 require "mail_tool/commands/rename_folders"

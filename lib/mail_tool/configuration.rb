@@ -1,9 +1,11 @@
 module MailTool
   class Configuration
-    DEFAULTS = { port: 993, ssl: true }.freeze
-    REQUIRED = %i[server username password].freeze
+    DEFAULTS = { port: 993, ssl: true, auth_type: "basic", token_store: "~/.mail-tool-tokens.yml" }.freeze
+    REQUIRED = %i[server username].freeze
+    OAUTH2_REQUIRED = %w[client_id client_secret authorize_url token_url].freeze
 
-    attr_accessor :server, :port, :username, :password, :ssl
+    attr_accessor :server, :port, :username, :password, :ssl,
+                  :auth_type, :oauth2, :token_store
 
     def self.load(config_path: nil, overrides: {})
       config = new
@@ -33,10 +35,30 @@ module MailTool
     end
 
     def validate!
-      REQUIRED.each do |field|
+      validate_required!(REQUIRED)
+      if auth_type == "xoauth2"
+        validate_oauth2_settings!
+      else
+        validate_required!(%i[password])
+      end
+    end
+
+    private
+
+    def validate_required!(fields)
+      fields.each do |field|
         value = send(field)
         if value.nil? || (value.respond_to?(:empty?) && value.empty?)
           raise ConfigurationError, "#{field} is required"
+        end
+      end
+    end
+
+    def validate_oauth2_settings!
+      OAUTH2_REQUIRED.each do |field|
+        value = oauth2.is_a?(Hash) ? oauth2[field] : nil
+        if value.nil? || (value.respond_to?(:empty?) && value.empty?)
+          raise ConfigurationError, "oauth2.#{field} is required"
         end
       end
     end

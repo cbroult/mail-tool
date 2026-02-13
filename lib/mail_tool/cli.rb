@@ -1,15 +1,18 @@
+require "socket"
+
 module MailTool
   class CLI < Thor
     def self.exit_on_failure?
       true
     end
 
-    class_option :server,   aliases: "-s", type: :string, desc: "IMAP server hostname"
-    class_option :port,     aliases: "-p", type: :numeric, desc: "IMAP server port"
-    class_option :username, aliases: "-u", type: :string, desc: "IMAP username"
-    class_option :password, aliases: "-P", type: :string, desc: "IMAP password"
-    class_option :ssl,      type: :boolean, desc: "Use SSL/TLS"
-    class_option :config,   aliases: "-c", type: :string, desc: "Path to config file"
+    class_option :server,      aliases: "-s", type: :string, desc: "IMAP server hostname"
+    class_option :port,        aliases: "-p", type: :numeric, desc: "IMAP server port"
+    class_option :username,    aliases: "-u", type: :string, desc: "IMAP username"
+    class_option :password,    aliases: "-P", type: :string, desc: "IMAP password"
+    class_option :ssl,         type: :boolean, desc: "Use SSL/TLS"
+    class_option :config,      aliases: "-c", type: :string, desc: "Path to config file"
+    class_option :token_store, type: :string, desc: "Path to OAuth2 token store file"
 
     desc "list", "List mail folders"
     option :filter, aliases: "-f", type: :string, desc: "Filter folders by regex pattern"
@@ -70,9 +73,61 @@ module MailTool
       abort_with(e.message)
     end
 
+    desc "authorize", "Authorize with OAuth2 provider"
+    def authorize
+      config = build_config_for_authorize
+
+      flow = OAuth2Flow.new(config.oauth2)
+      url = flow.authorization_url
+
+      say "Open this URL in your browser to authorize:"
+      say url
+      say ""
+
+      attempt_open_browser(url)
+
+      say "Waiting for authorization callback on localhost:#{flow.redirect_port}..."
+      server = TCPServer.new("127.0.0.1", flow.redirect_port)
+      code = flow.wait_for_callback(server)
+
+      say "Exchanging authorization code for tokens..."
+      tokens = flow.exchange_code(code)
+
+      store = TokenStore.new(config.token_store)
+      key = TokenStore.token_key(config.server, config.username)
+      store.save(key, **tokens)
+
+      say "Authorization successful! Tokens saved."
+    rescue MailTool::Error => e
+      abort_with(e.message)
+    end
+
     private
 
     def build_config
+      config = Configuration.load(
+        config_path: options[:config],
+        overrides: config_overrides
+      )
+      config.validate!
+      config
+    end
+
+    def build_config_for_authorize
+      config = Configuration.load(
+        config_path: options[:config],
+        overrides: config_overrides
+      )
+
+      unless config.auth_type == "xoauth2"
+        raise MailTool::ConfigurationError, "auth_type must be 'xoauth2' to use authorize"
+      end
+
+      config.validate!
+      config
+    end
+
+    def config_overrides
       overrides = {
         server:   options[:server],
         port:     options[:port],
@@ -80,12 +135,8 @@ module MailTool
         password: options[:password],
         ssl:      options[:ssl]
       }
-      config = Configuration.load(
-        config_path: options[:config],
-        overrides: overrides
-      )
-      config.validate!
-      config
+      overrides[:token_store] = options[:token_store] if options[:token_store]
+      overrides
     end
 
     def parse_filter(filter_str)
@@ -105,6 +156,12 @@ module MailTool
     def abort_with(message)
       $stderr.puts "Error: #{message}"
       exit 1
+    end
+
+    def attempt_open_browser(url)
+      system("xdg-open", url, [:out, :err] => "/dev/null")
+    rescue StandardError
+      nil
     end
   end
 end

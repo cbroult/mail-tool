@@ -1,0 +1,13 @@
+server: imap.mail.yahoo.com
+port: 993
+username: user@yahoo.com
+auth_type: xoauth2
+ssl: true
+token_store: /tmp/test-tokens.yml
+oauth2:
+  client_id: "test-client-id"
+  client_secret: "test-client-secret"
+  authorize_url: "https://api.login.yahoo.com/oauth2/request_auth"
+  token_url: "https://api.login.yahoo.com/oauth2/get_token"
+  scope: "mail-r mail-w"
+  redirect_port: 8089
