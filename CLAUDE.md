@@ -49,6 +49,7 @@ mail-tool/
     fixtures/
       mail_tool.yml              # sample config for tests
   features/
+    help.feature                 # BDD scenarios for CLI help output
     list_folders.feature         # BDD scenarios for folder listing
     rename_folders.feature       # BDD scenarios for folder renaming
     support/
