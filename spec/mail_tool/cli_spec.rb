@@ -76,7 +76,7 @@ RSpec.describe MailTool::CLI do
 
     it "shows plan and renames with --yes" do
       output = capture_stdout do
-        described_class.start(["rename", "^Old\\.", "New.", "--yes", "--config", config_path])
+        described_class.start(["rename", "^Old\\.", "New.", "--yes", "--no-dry-run", "--config", config_path])
       end
 
       expect(output).to include("Old.Folder1 -> New.Folder1")
@@ -122,7 +122,7 @@ RSpec.describe MailTool::CLI do
         .and_raise(Net::IMAP::BadResponseError.new(bad_response))
 
       output = capture_stdout do
-        described_class.start(["rename", "^Old\\.", "New.", "--yes", "--config", config_path])
+        described_class.start(["rename", "^Old\\.", "New.", "--yes", "--no-dry-run", "--config", config_path])
       end
 
       expect(output).to include("Renamed 1 folder(s)")

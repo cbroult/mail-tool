@@ -22,7 +22,7 @@ Feature: Rename mail folders
       | Temp.Folder1 |
       | Temp.Folder2 |
       | Keep         |
-    When I run `mail-tool rename "^Temp\." "Archive.Temp." --yes --config tmp/mail-tool.yml`
+    When I run `mail-tool rename "^Temp\." "Archive.Temp." --yes --no-dry-run --config tmp/mail-tool.yml`
     Then the output should contain "Temp.Folder1 -> Archive.Temp.Folder1"
     And the output should contain "Temp.Folder2 -> Archive.Temp.Folder2"
     And the output should contain "Renamed 2 folder(s)"
@@ -33,7 +33,7 @@ Feature: Rename mail folders
       | Work.Projects |
       | Work.Meetings |
       | Personal      |
-    When I run `mail-tool rename "^Work\.(.+)" "Archive.\1" --yes --config tmp/mail-tool.yml`
+    When I run `mail-tool rename "^Work\.(.+)" "Archive.\1" --yes --no-dry-run --config tmp/mail-tool.yml`
     Then the output should contain "Work.Projects -> Archive.Projects"
     And the output should contain "Work.Meetings -> Archive.Meetings"
     And the output should not contain "Personal"
@@ -55,7 +55,7 @@ Feature: Rename mail folders
       | 00.topic.done    |
       | 00.topic.pending |
       | Other.Folder     |
-    When I run `mail-tool rename "^(\d+)\.(.+)\.(.+)$" "\1 | \2 | \3" --yes --config tmp/mail-tool.yml`
+    When I run `mail-tool rename "^(\d+)\.(.+)\.(.+)$" "\1 | \2 | \3" --yes --no-dry-run --config tmp/mail-tool.yml`
     Then the output should contain "00.topic.done -> 00 | topic | done"
     And the output should contain "00.topic.pending -> 00 | topic | pending"
     And the output should not contain "Other.Folder"
@@ -74,7 +74,7 @@ Feature: Rename mail folders
       | Move.B |
       | Move.C |
     And renaming "Move.B" will fail with "Permission denied"
-    When I run `mail-tool rename "^Move\." "Done." --yes --config tmp/mail-tool.yml`
+    When I run `mail-tool rename "^Move\." "Done." --yes --no-dry-run --config tmp/mail-tool.yml`
     Then the output should contain "Move.A -> Done.A"
     And the output should contain "Move.C -> Done.C"
     And the output should contain "Failed to rename Move.B"

@@ -31,7 +31,7 @@ module MailTool
     end
 
     desc "rename PATTERN REPLACEMENT", "Rename folders matching PATTERN"
-    option :dry_run, type: :boolean, default: false, desc: "Preview changes without renaming"
+    option :dry_run, type: :boolean, default: true, desc: "Preview changes without renaming"
     option :yes, type: :boolean, default: false, desc: "Skip confirmation"
     def rename(pattern_str, replacement)
       config = build_config
