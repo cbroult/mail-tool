@@ -51,3 +51,24 @@ Feature: List mail folders
     When I run `mail-tool list --config tmp/nonexistent.yml`
     Then the output should contain "server is required"
     And the exit status should be 1
+
+  Scenario: List folders with OAuth2 authentication and valid tokens
+    Given a config file with valid OAuth2 credentials
+    And a token store with valid tokens for "imap.example.com" and "user@example.com"
+    And the IMAP server has the following folders:
+      | INBOX |
+      | Sent  |
+    When I run `mail-tool list --config tmp/mail-tool.yml`
+    Then the output should contain "INBOX"
+    And the output should contain "Sent"
+    And the exit status should be 0
+
+  Scenario: Missing OAuth2 tokens error
+    Given a config file with valid OAuth2 credentials
+    And no token store file exists
+    And the IMAP server has the following folders:
+      | INBOX |
+    When I run `mail-tool list --config tmp/mail-tool.yml`
+    Then the output should contain "No OAuth2 tokens found"
+    And the output should contain "Run 'mail-tool authorize' first"
+    And the exit status should be 1
