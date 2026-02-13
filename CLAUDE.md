@@ -141,7 +141,10 @@ BDD specification-by-example tests that exercise the full CLI as a subprocess.
 
 ## Development Workflow
 
-- BDD outer loop + TDD inner loop (red-green-refactor)
+- **Always follow BDD/TDD loops when making changes:**
+  1. **BDD outer loop**: Write or update Cucumber scenarios first to define the desired behavior
+  2. **TDD inner loop**: Write or update RSpec unit tests, then implement the production code (red-green-refactor)
+  3. Verify all tests pass with `bundle exec rake` before considering the work done
 - Run all tests: `bundle exec rake` (runs both rspec and cucumber)
 - Run unit tests: `bundle exec rspec`
 - Run acceptance tests: `bundle exec cucumber`
