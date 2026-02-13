@@ -79,6 +79,29 @@ Feature: Rename mail folders
     And the output should contain "Move.C -> Done.C"
     And the output should contain "Failed to rename Move.B"
 
+  Scenario: Rename prompts for confirmation and user confirms
+    Given the IMAP server has the following folders:
+      | Old.Alpha |
+      | Old.Beta  |
+      | Keep      |
+    When I run `mail-tool rename "^Old\." "New." --no-dry-run --config tmp/mail-tool.yml` interactively
+    And I type "y"
+    Then the output should contain "Old.Alpha -> New.Alpha"
+    And the output should contain "Old.Beta -> New.Beta"
+    And the output should contain "Proceed with rename?"
+    And the output should contain "Renamed 2 folder(s)"
+
+  Scenario: Rename prompts for confirmation and user declines
+    Given the IMAP server has the following folders:
+      | Old.Alpha |
+      | Old.Beta  |
+    When I run `mail-tool rename "^Old\." "New." --no-dry-run --config tmp/mail-tool.yml` interactively
+    And I type "n"
+    Then the output should contain "Old.Alpha -> New.Alpha"
+    And the output should contain "Proceed with rename?"
+    And the output should contain "Cancelled"
+    And the output should not contain "Renamed"
+
   Scenario: Invalid regex pattern
     Given the IMAP server has the following folders:
       | INBOX |

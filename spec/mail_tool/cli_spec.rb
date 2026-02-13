@@ -113,6 +113,43 @@ RSpec.describe MailTool::CLI do
       expect(output).to include("Invalid regex")
     end
 
+    it "prompts for confirmation and executes on confirm" do
+      allow_any_instance_of(described_class).to receive(:yes?).and_return(true)
+
+      output = capture_stdout do
+        described_class.start(["rename", "^Old\\.", "New.", "--no-dry-run", "--config", config_path])
+      end
+
+      expect(output).to include("Old.Folder1 -> New.Folder1")
+      expect(output).to include("Renamed 2 folder(s)")
+      expect(mock_imap).to have_received(:rename).with("Old.Folder1", "New.Folder1")
+      expect(mock_imap).to have_received(:rename).with("Old.Folder2", "New.Folder2")
+    end
+
+    it "prompts for confirmation and cancels on decline" do
+      allow_any_instance_of(described_class).to receive(:yes?).and_return(false)
+
+      output = capture_stdout do
+        described_class.start(["rename", "^Old\\.", "New.", "--no-dry-run", "--config", config_path])
+      end
+
+      expect(output).to include("Old.Folder1 -> New.Folder1")
+      expect(output).to include("Cancelled")
+      expect(output).not_to include("Renamed")
+      expect(mock_imap).not_to have_received(:rename)
+    end
+
+    it "skips prompt with --yes" do
+      expect_any_instance_of(described_class).not_to receive(:yes?)
+
+      output = capture_stdout do
+        described_class.start(["rename", "^Old\\.", "New.", "--yes", "--no-dry-run", "--config", config_path])
+      end
+
+      expect(output).to include("Renamed 2 folder(s)")
+      expect(mock_imap).to have_received(:rename).twice
+    end
+
     it "reports per-folder errors" do
       bad_response = Net::IMAP::TaggedResponse.new(
         "BAD", "BAD", Net::IMAP::ResponseText.new(nil, "Denied"), nil

@@ -39,7 +39,7 @@ module MailTool
 
       Connection.connect(config) do |imap|
         cmd = Commands::RenameFolders.new(imap, pattern: pattern, replacement: replacement)
-        result = cmd.call(dry_run: options[:dry_run])
+        result = cmd.call(dry_run: true)
 
         if result.planned.empty?
           say "No folders match the pattern"
@@ -52,14 +52,18 @@ module MailTool
 
         if options[:dry_run]
           say "Dry run — no changes made"
-        else
-          if !options[:yes] && !options[:dry_run]
-            # Already executed since we passed dry_run: false above
-          end
-          say "Renamed #{result.renamed_count} folder(s)"
-          result.errors.each do |err|
-            say "Failed to rename #{err[:folder]}: #{err[:error]}"
-          end
+          return
+        end
+
+        unless options[:yes] || yes?("Proceed with rename? (y/N) ")
+          say "Cancelled"
+          return
+        end
+
+        result = cmd.call(dry_run: false)
+        say "Renamed #{result.renamed_count} folder(s)"
+        result.errors.each do |err|
+          say "Failed to rename #{err[:folder]}: #{err[:error]}"
         end
       end
     rescue MailTool::Error => e
