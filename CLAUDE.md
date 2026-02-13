@@ -147,6 +147,10 @@ BDD specification-by-example tests that exercise the full CLI as a subprocess.
 - **list_folders.feature**: all folders, alphabetical sorting, regex filtering, empty mailbox, missing config
 - **rename_folders.feature**: dry-run, live rename with `--yes`, backreferences, no matches, per-folder errors, invalid regex
 
+## Code Style
+
+- Use comments sparingly. Only comment complex code.
+
 ## Development Workflow
 
 - **Always follow BDD/TDD loops when making changes:**
