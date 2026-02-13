@@ -7,10 +7,10 @@ RSpec.describe MailTool::Commands::RenameFolders do
 
   before do
     allow(mock_imap).to receive(:list).with("", "*").and_return([
-      mailbox("OldPrefix.Folder1"),
-      mailbox("OldPrefix.Folder2"),
-      mailbox("Unrelated")
-    ])
+                                                                  mailbox("OldPrefix.Folder1"),
+                                                                  mailbox("OldPrefix.Folder2"),
+                                                                  mailbox("Unrelated")
+                                                                ])
     allow(mock_imap).to receive(:rename)
   end
 
@@ -21,9 +21,9 @@ RSpec.describe MailTool::Commands::RenameFolders do
       result = cmd.call(dry_run: true)
 
       expect(result.planned).to eq([
-        { from: "OldPrefix.Folder1", to: "NewPrefix.Folder1" },
-        { from: "OldPrefix.Folder2", to: "NewPrefix.Folder2" }
-      ])
+                                     { from: "OldPrefix.Folder1", to: "NewPrefix.Folder1" },
+                                     { from: "OldPrefix.Folder2", to: "NewPrefix.Folder2" }
+                                   ])
     end
 
     it "does not call imap.rename in dry-run mode" do
@@ -45,9 +45,9 @@ RSpec.describe MailTool::Commands::RenameFolders do
 
     it "skips folders where the name does not change" do
       allow(mock_imap).to receive(:list).with("", "*").and_return([
-        mailbox("Match.Folder"),
-        mailbox("NoChange")
-      ])
+                                                                    mailbox("Match.Folder"),
+                                                                    mailbox("NoChange")
+                                                                  ])
       cmd = described_class.new(mock_imap, pattern: /^Match\./, replacement: "Match.")
 
       result = cmd.call(dry_run: true)
@@ -57,33 +57,33 @@ RSpec.describe MailTool::Commands::RenameFolders do
 
     it "supports backreferences in replacement" do
       allow(mock_imap).to receive(:list).with("", "*").and_return([
-        mailbox("Work.Projects"),
-        mailbox("Work.Meetings")
-      ])
+                                                                    mailbox("Work.Projects"),
+                                                                    mailbox("Work.Meetings")
+                                                                  ])
       cmd = described_class.new(mock_imap, pattern: /^Work\.(.+)/, replacement: 'Archive.\1')
 
       result = cmd.call(dry_run: true)
 
       expect(result.planned).to eq([
-        { from: "Work.Meetings", to: "Archive.Meetings" },
-        { from: "Work.Projects", to: "Archive.Projects" }
-      ])
+                                     { from: "Work.Meetings", to: "Archive.Meetings" },
+                                     { from: "Work.Projects", to: "Archive.Projects" }
+                                   ])
     end
 
     it "replaces all dots with pipe separators in multi-segment names" do
       allow(mock_imap).to receive(:list).with("", "*").and_return([
-        mailbox("00.topic.done"),
-        mailbox("01.other.in-progress"),
-        mailbox("NoDots")
-      ])
+                                                                    mailbox("00.topic.done"),
+                                                                    mailbox("01.other.in-progress"),
+                                                                    mailbox("NoDots")
+                                                                  ])
       cmd = described_class.new(mock_imap, pattern: /\./, replacement: " | ")
 
       result = cmd.call(dry_run: true)
 
       expect(result.planned).to eq([
-        { from: "00.topic.done", to: "00 | topic | done" },
-        { from: "01.other.in-progress", to: "01 | other | in-progress" }
-      ])
+                                     { from: "00.topic.done", to: "00 | topic | done" },
+                                     { from: "01.other.in-progress", to: "01 | other | in-progress" }
+                                   ])
     end
 
     it "returns empty planned list when no folders match" do
@@ -100,7 +100,7 @@ RSpec.describe MailTool::Commands::RenameFolders do
       )
       allow(mock_imap).to receive(:rename).with("OldPrefix.Folder1", "NewPrefix.Folder1")
       allow(mock_imap).to receive(:rename).with("OldPrefix.Folder2", "NewPrefix.Folder2")
-        .and_raise(Net::IMAP::BadResponseError.new(bad_response))
+                                          .and_raise(Net::IMAP::BadResponseError.new(bad_response))
 
       cmd = described_class.new(mock_imap, pattern: /^OldPrefix\./, replacement: "NewPrefix.")
 
@@ -108,8 +108,8 @@ RSpec.describe MailTool::Commands::RenameFolders do
 
       expect(result.renamed_count).to eq(1)
       expect(result.errors).to eq([
-        { folder: "OldPrefix.Folder2", error: "Permission denied" }
-      ])
+                                    { folder: "OldPrefix.Folder2", error: "Permission denied" }
+                                  ])
     end
 
     it "reports renamed count on success" do

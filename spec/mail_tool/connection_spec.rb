@@ -1,3 +1,4 @@
+require "English"
 require "tmpdir"
 
 RSpec.describe MailTool::Connection do
@@ -44,9 +45,9 @@ RSpec.describe MailTool::Connection do
     end
 
     it "disconnects even when an error occurs in the block" do
-      expect {
-        described_class.connect(config) { |imap| raise "boom" }
-      }.to raise_error(RuntimeError, "boom")
+      expect do
+        described_class.connect(config) { |_imap| raise "boom" }
+      end.to raise_error(RuntimeError, "boom")
 
       expect(mock_imap).to have_received(:disconnect)
     end
@@ -54,25 +55,25 @@ RSpec.describe MailTool::Connection do
     it "translates SocketError to ConnectionError" do
       allow(Net::IMAP).to receive(:new).and_raise(SocketError.new("getaddrinfo: Name or service not known"))
 
-      expect {
+      expect do
         described_class.connect(config) { |imap| }
-      }.to raise_error(MailTool::ConnectionError, /failed to connect.*imap.example.com/i)
+      end.to raise_error(MailTool::ConnectionError, /failed to connect.*imap.example.com/i)
     end
 
     it "translates Errno::ECONNREFUSED to ConnectionError" do
       allow(Net::IMAP).to receive(:new).and_raise(Errno::ECONNREFUSED)
 
-      expect {
+      expect do
         described_class.connect(config) { |imap| }
-      }.to raise_error(MailTool::ConnectionError, /failed to connect/i)
+      end.to raise_error(MailTool::ConnectionError, /failed to connect/i)
     end
 
     it "translates OpenSSL::SSL::SSLError to ConnectionError" do
       allow(Net::IMAP).to receive(:new).and_raise(OpenSSL::SSL::SSLError.new("SSL_connect"))
 
-      expect {
+      expect do
         described_class.connect(config) { |imap| }
-      }.to raise_error(MailTool::ConnectionError, /ssl/i)
+      end.to raise_error(MailTool::ConnectionError, /ssl/i)
     end
 
     it "translates Net::IMAP::NoResponseError to AuthenticationError" do
@@ -83,9 +84,9 @@ RSpec.describe MailTool::Connection do
         Net::IMAP::NoResponseError.new(response)
       )
 
-      expect {
+      expect do
         described_class.connect(config) { |imap| }
-      }.to raise_error(MailTool::AuthenticationError, /authentication failed/i)
+      end.to raise_error(MailTool::AuthenticationError, /authentication failed/i)
     end
 
     it "connects without ssl when ssl is false" do
@@ -120,7 +121,7 @@ RSpec.describe MailTool::Connection do
       )
     end
 
-    let(:token_store_path) { File.join(Dir.tmpdir, "mail-tool-conn-test-#{$$}.yml") }
+    let(:token_store_path) { File.join(Dir.tmpdir, "mail-tool-conn-test-#{$PROCESS_ID}.yml") }
     let(:token_store) { MailTool::TokenStore.new(token_store_path) }
     let(:token_key) { "imap.example.com/user@example.com" }
 
@@ -129,7 +130,7 @@ RSpec.describe MailTool::Connection do
     end
 
     after do
-      File.delete(token_store_path) if File.exist?(token_store_path)
+      FileUtils.rm_f(token_store_path)
     end
 
     it "authenticates with XOAUTH2 when auth_type is xoauth2" do
@@ -142,13 +143,14 @@ RSpec.describe MailTool::Connection do
     end
 
     it "raises ConfigurationError when no tokens are found" do
-      expect {
+      expect do
         described_class.connect(oauth2_config) { |imap| }
-      }.to raise_error(MailTool::ConfigurationError, /No OAuth2 tokens found.*Run 'mail-tool authorize' first/)
+      end.to raise_error(MailTool::ConfigurationError, /No OAuth2 tokens found.*Run 'mail-tool authorize' first/)
     end
 
     it "auto-refreshes expired tokens" do
-      token_store.save(token_key, access_token: "expired-token", refresh_token: "ref-token", expires_at: Time.now.to_i - 100)
+      token_store.save(token_key, access_token: "expired-token", refresh_token: "ref-token",
+                                  expires_at: Time.now.to_i - 100)
 
       mock_flow = instance_double(MailTool::OAuth2Flow)
       allow(MailTool::OAuth2Flow).to receive(:new).and_return(mock_flow)
@@ -178,9 +180,9 @@ RSpec.describe MailTool::Connection do
         Net::IMAP::NoResponseError.new(response)
       )
 
-      expect {
+      expect do
         described_class.connect(oauth2_config) { |imap| }
-      }.to raise_error(MailTool::AuthenticationError, /authentication failed/i)
+      end.to raise_error(MailTool::AuthenticationError, /authentication failed/i)
     end
   end
 end

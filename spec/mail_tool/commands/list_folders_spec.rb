@@ -8,35 +8,35 @@ RSpec.describe MailTool::Commands::ListFolders do
   describe "#call" do
     it "returns folder names sorted alphabetically" do
       allow(mock_imap).to receive(:list).with("", "*").and_return([
-        mailbox("Zebra"),
-        mailbox("Alpha"),
-        mailbox("Middle")
-      ])
+                                                                    mailbox("Zebra"),
+                                                                    mailbox("Alpha"),
+                                                                    mailbox("Middle")
+                                                                  ])
 
       result = described_class.new(mock_imap).call
 
-      expect(result.map(&:name)).to eq(["Alpha", "Middle", "Zebra"])
+      expect(result.map(&:name)).to eq(%w[Alpha Middle Zebra])
     end
 
     it "returns all folders when no filter is given" do
       allow(mock_imap).to receive(:list).with("", "*").and_return([
-        mailbox("INBOX"),
-        mailbox("Sent"),
-        mailbox("Drafts")
-      ])
+                                                                    mailbox("INBOX"),
+                                                                    mailbox("Sent"),
+                                                                    mailbox("Drafts")
+                                                                  ])
 
       result = described_class.new(mock_imap).call
 
-      expect(result.map(&:name)).to eq(["Drafts", "INBOX", "Sent"])
+      expect(result.map(&:name)).to eq(%w[Drafts INBOX Sent])
     end
 
     it "filters folders by regex pattern" do
       allow(mock_imap).to receive(:list).with("", "*").and_return([
-        mailbox("INBOX"),
-        mailbox("INBOX.Subfolder"),
-        mailbox("Sent"),
-        mailbox("Trash")
-      ])
+                                                                    mailbox("INBOX"),
+                                                                    mailbox("INBOX.Subfolder"),
+                                                                    mailbox("Sent"),
+                                                                    mailbox("Trash")
+                                                                  ])
 
       result = described_class.new(mock_imap).call(filter: /^INBOX/)
 
@@ -53,12 +53,12 @@ RSpec.describe MailTool::Commands::ListFolders do
 
     it "preserves folder attributes" do
       allow(mock_imap).to receive(:list).with("", "*").and_return([
-        mailbox("INBOX", [:Noinferiors, :Hasnochildren])
-      ])
+                                                                    mailbox("INBOX", %i[Noinferiors Hasnochildren])
+                                                                  ])
 
       result = described_class.new(mock_imap).call
 
-      expect(result.first.attr).to eq([:Noinferiors, :Hasnochildren])
+      expect(result.first.attr).to eq(%i[Noinferiors Hasnochildren])
     end
   end
 end

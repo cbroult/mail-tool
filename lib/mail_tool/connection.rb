@@ -29,9 +29,7 @@ module MailTool
         end
         imap.disconnect
       end
-    rescue SocketError => e
-      raise ConnectionError, "Failed to connect to #{config.server}: #{e.message}"
-    rescue Errno::ECONNREFUSED => e
+    rescue SocketError, Errno::ECONNREFUSED => e
       raise ConnectionError, "Failed to connect to #{config.server}: #{e.message}"
     rescue OpenSSL::SSL::SSLError => e
       raise ConnectionError, "SSL error connecting to #{config.server}: #{e.message}"
@@ -44,7 +42,7 @@ module MailTool
 
       unless tokens
         raise ConfigurationError,
-          "No OAuth2 tokens found for #{config.username}. Run 'mail-tool authorize' first."
+              "No OAuth2 tokens found for #{config.username}. Run 'mail-tool authorize' first."
       end
 
       if store.expired?(tokens)

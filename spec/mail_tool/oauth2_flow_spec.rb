@@ -55,10 +55,9 @@ RSpec.describe MailTool::OAuth2Flow do
   describe "#exchange_code" do
     it "exchanges authorization code for tokens" do
       token = instance_double(OAuth2::AccessToken,
-        token: "access-123",
-        refresh_token: "refresh-456",
-        expires_at: 1700000000
-      )
+                              token: "access-123",
+                              refresh_token: "refresh-456",
+                              expires_at: 1_700_000_000)
       allow(mock_auth_code).to receive(:get_token).and_return(token)
 
       result = flow.exchange_code("auth-code-xyz")
@@ -70,7 +69,7 @@ RSpec.describe MailTool::OAuth2Flow do
       expect(result).to eq(
         access_token: "access-123",
         refresh_token: "refresh-456",
-        expires_at: 1700000000
+        expires_at: 1_700_000_000
       )
     end
   end
@@ -79,10 +78,9 @@ RSpec.describe MailTool::OAuth2Flow do
     it "refreshes an expired token and returns new tokens" do
       old_token = instance_double(OAuth2::AccessToken)
       new_token = instance_double(OAuth2::AccessToken,
-        token: "new-access",
-        refresh_token: "new-refresh",
-        expires_at: 1800000000
-      )
+                                  token: "new-access",
+                                  refresh_token: "new-refresh",
+                                  expires_at: 1_800_000_000)
       allow(OAuth2::AccessToken).to receive(:from_hash).and_return(old_token)
       allow(old_token).to receive(:refresh!).and_return(new_token)
 
@@ -91,7 +89,7 @@ RSpec.describe MailTool::OAuth2Flow do
       expect(result).to eq(
         access_token: "new-access",
         refresh_token: "new-refresh",
-        expires_at: 1800000000
+        expires_at: 1_800_000_000
       )
     end
   end

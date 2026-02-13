@@ -1,3 +1,4 @@
+require "English"
 require "json"
 require "yaml"
 require "tmpdir"
@@ -13,7 +14,7 @@ require "tmpdir"
 module MockHelper
   def mock_imap_path
     @mock_imap_path ||= begin
-      dir = File.join(Dir.tmpdir, "mail-tool-test-#{$$}-#{rand(100000)}")
+      dir = File.join(Dir.tmpdir, "mail-tool-test-#{$PROCESS_ID}-#{rand(100_000)}")
       FileUtils.mkdir_p(dir)
       File.join(dir, "imap_mock.json")
     end
@@ -33,7 +34,5 @@ Before do
 end
 
 After do
-  if @mock_imap_path && File.exist?(@mock_imap_path)
-    FileUtils.rm_rf(File.dirname(@mock_imap_path))
-  end
+  FileUtils.rm_rf(File.dirname(@mock_imap_path)) if @mock_imap_path && File.exist?(@mock_imap_path)
 end

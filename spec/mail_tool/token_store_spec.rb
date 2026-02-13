@@ -1,12 +1,13 @@
+require "English"
 require "tmpdir"
 
 RSpec.describe MailTool::TokenStore do
-  let(:store_path) { File.join(Dir.tmpdir, "mail-tool-test-tokens-#{$$}.yml") }
+  let(:store_path) { File.join(Dir.tmpdir, "mail-tool-test-tokens-#{$PROCESS_ID}.yml") }
   let(:store) { described_class.new(store_path) }
   let(:key) { "imap.example.com/user@example.com" }
 
   after do
-    File.delete(store_path) if File.exist?(store_path)
+    FileUtils.rm_f(store_path)
   end
 
   describe ".token_key" do
@@ -18,16 +19,16 @@ RSpec.describe MailTool::TokenStore do
 
   describe "#save" do
     it "writes tokens to the YAML file" do
-      store.save(key, access_token: "abc", refresh_token: "xyz", expires_at: 1700000000)
+      store.save(key, access_token: "abc", refresh_token: "xyz", expires_at: 1_700_000_000)
 
       data = YAML.safe_load_file(store_path, permitted_classes: [Symbol])
       expect(data[key]["access_token"]).to eq("abc")
       expect(data[key]["refresh_token"]).to eq("xyz")
-      expect(data[key]["expires_at"]).to eq(1700000000)
+      expect(data[key]["expires_at"]).to eq(1_700_000_000)
     end
 
     it "sets file permissions to 0600" do
-      store.save(key, access_token: "abc", refresh_token: "xyz", expires_at: 1700000000)
+      store.save(key, access_token: "abc", refresh_token: "xyz", expires_at: 1_700_000_000)
 
       mode = File.stat(store_path).mode & 0o777
       expect(mode).to eq(0o600)
@@ -45,12 +46,12 @@ RSpec.describe MailTool::TokenStore do
 
   describe "#load" do
     it "returns token hash for a known key" do
-      store.save(key, access_token: "abc", refresh_token: "xyz", expires_at: 1700000000)
+      store.save(key, access_token: "abc", refresh_token: "xyz", expires_at: 1_700_000_000)
 
       tokens = store.load(key)
       expect(tokens["access_token"]).to eq("abc")
       expect(tokens["refresh_token"]).to eq("xyz")
-      expect(tokens["expires_at"]).to eq(1700000000)
+      expect(tokens["expires_at"]).to eq(1_700_000_000)
     end
 
     it "returns nil for an unknown key" do

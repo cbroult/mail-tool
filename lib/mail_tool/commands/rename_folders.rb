@@ -25,7 +25,7 @@ module MailTool
       def build_plan(folders)
         folders
           .map { |f| { from: f.name, to: f.name.gsub(@pattern, @replacement) } }
-          .select { |r| r[:from] != r[:to] }
+          .reject { |r| r[:from] == r[:to] }
           .sort_by { |r| r[:from] }
       end
 
@@ -34,12 +34,10 @@ module MailTool
         renamed = 0
 
         planned.each do |rename|
-          begin
-            @imap.rename(rename[:from], rename[:to])
-            renamed += 1
-          rescue StandardError => e
-            errors << { folder: rename[:from], error: e.message }
-          end
+          @imap.rename(rename[:from], rename[:to])
+          renamed += 1
+        rescue StandardError => e
+          errors << { folder: rename[:from], error: e.message }
         end
 
         Result.new(planned: planned, renamed_count: renamed, errors: errors)

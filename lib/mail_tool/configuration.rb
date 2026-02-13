@@ -55,9 +55,7 @@ module MailTool
     def validate_required!(fields)
       fields.each do |field|
         value = send(field)
-        if value.nil? || (value.respond_to?(:empty?) && value.empty?)
-          raise ConfigurationError, "#{field} is required"
-        end
+        raise ConfigurationError, "#{field} is required" if value.nil? || (value.respond_to?(:empty?) && value.empty?)
       end
     end
 

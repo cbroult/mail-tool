@@ -3,7 +3,7 @@ require "net/imap"
 require "yaml"
 
 module MailTool
-  VERSION = "0.1.0"
+  VERSION = "0.1.0".freeze
 
   class Error < StandardError; end
   class ConfigurationError < Error; end

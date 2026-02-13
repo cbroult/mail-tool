@@ -1,3 +1,4 @@
+require "English"
 require "tmpdir"
 
 RSpec.describe MailTool::CLI do
@@ -15,10 +16,10 @@ RSpec.describe MailTool::CLI do
   describe "list" do
     it "lists all folders" do
       allow(mock_imap).to receive(:list).with("", "*").and_return([
-        mailbox("INBOX"),
-        mailbox("Sent"),
-        mailbox("Drafts")
-      ])
+                                                                    mailbox("INBOX"),
+                                                                    mailbox("Sent"),
+                                                                    mailbox("Drafts")
+                                                                  ])
 
       output = capture_stdout do
         described_class.start(["list", "--config", config_path])
@@ -31,10 +32,10 @@ RSpec.describe MailTool::CLI do
 
     it "filters folders by regex" do
       allow(mock_imap).to receive(:list).with("", "*").and_return([
-        mailbox("INBOX"),
-        mailbox("INBOX.Sub"),
-        mailbox("Sent")
-      ])
+                                                                    mailbox("INBOX"),
+                                                                    mailbox("INBOX.Sub"),
+                                                                    mailbox("Sent")
+                                                                  ])
 
       output = capture_stdout do
         described_class.start(["list", "--filter", "^INBOX", "--config", config_path])
@@ -57,9 +58,9 @@ RSpec.describe MailTool::CLI do
 
     it "exits with error when config is missing required fields" do
       output = capture_stderr do
-        expect {
+        expect do
           described_class.start(["list", "--config", "/nonexistent/path.yml"])
-        }.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
+        end.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
       end
 
       expect(output).to include("server is required")
@@ -71,14 +72,15 @@ RSpec.describe MailTool::CLI do
       fake_home = Dir.mktmpdir("mail-tool-cli-test")
       default_dir = File.join(fake_home, ".config", "mail-tool")
       FileUtils.mkdir_p(default_dir)
-      File.write(File.join(default_dir, "config.yml"), YAML.dump(
+      config_data = {
         "server" => "imap.example.com", "username" => "user@example.com",
         "password" => "secret", "port" => 993, "ssl" => true
-      ))
+      }
+      File.write(File.join(default_dir, "config.yml"), YAML.dump(config_data))
 
       output = nil
       begin
-        original_home = ENV["HOME"]
+        original_home = Dir.home
         ENV["HOME"] = fake_home
 
         output = capture_stdout do
@@ -96,13 +98,13 @@ RSpec.describe MailTool::CLI do
       fake_home = Dir.mktmpdir("mail-tool-cli-test")
 
       begin
-        original_home = ENV["HOME"]
+        original_home = Dir.home
         ENV["HOME"] = fake_home
 
         output = capture_stdout do
-          expect {
+          expect do
             described_class.start(["list"])
-          }.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
+          end.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
         end
 
         expect(output).to include("Config file created at")
@@ -121,10 +123,10 @@ RSpec.describe MailTool::CLI do
   describe "rename" do
     before do
       allow(mock_imap).to receive(:list).with("", "*").and_return([
-        mailbox("Old.Folder1"),
-        mailbox("Old.Folder2"),
-        mailbox("Keep")
-      ])
+                                                                    mailbox("Old.Folder1"),
+                                                                    mailbox("Old.Folder2"),
+                                                                    mailbox("Keep")
+                                                                  ])
       allow(mock_imap).to receive(:rename)
     end
 
@@ -159,9 +161,9 @@ RSpec.describe MailTool::CLI do
 
     it "exits with error on invalid regex" do
       output = capture_stderr do
-        expect {
+        expect do
           described_class.start(["rename", "[invalid", "x", "--dry-run", "--config", config_path])
-        }.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
+        end.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
       end
 
       expect(output).to include("Invalid regex")
@@ -210,7 +212,7 @@ RSpec.describe MailTool::CLI do
       )
       allow(mock_imap).to receive(:rename).with("Old.Folder1", "New.Folder1")
       allow(mock_imap).to receive(:rename).with("Old.Folder2", "New.Folder2")
-        .and_raise(Net::IMAP::BadResponseError.new(bad_response))
+                                          .and_raise(Net::IMAP::BadResponseError.new(bad_response))
 
       output = capture_stdout do
         described_class.start(["rename", "^Old\\.", "New.", "--yes", "--no-dry-run", "--config", config_path])
@@ -224,17 +226,17 @@ RSpec.describe MailTool::CLI do
   describe "authorize" do
     let(:oauth2_config_path) { File.expand_path("../fixtures/mail_tool_oauth2.yml", __dir__) }
     let(:mock_flow) { instance_double(MailTool::OAuth2Flow) }
-    let(:token_store_path) { File.join(Dir.tmpdir, "mail-tool-cli-test-#{$$}.yml") }
+    let(:token_store_path) { File.join(Dir.tmpdir, "mail-tool-cli-test-#{$PROCESS_ID}.yml") }
 
     after do
-      File.delete(token_store_path) if File.exist?(token_store_path)
+      FileUtils.rm_f(token_store_path)
     end
 
     it "rejects non-xoauth2 config" do
       output = capture_stderr do
-        expect {
+        expect do
           described_class.start(["authorize", "--config", config_path])
-        }.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
+        end.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
       end
 
       expect(output).to include("auth_type must be 'xoauth2'")
@@ -242,13 +244,12 @@ RSpec.describe MailTool::CLI do
 
     it "prints authorization URL and saves tokens" do
       allow(MailTool::OAuth2Flow).to receive(:new).and_return(mock_flow)
-      allow(mock_flow).to receive(:authorization_url).and_return("https://example.com/auth?client_id=cid")
-      allow(mock_flow).to receive(:redirect_port).and_return(8089)
-      allow(mock_flow).to receive(:wait_for_callback).and_return("auth-code")
+      allow(mock_flow).to receive_messages(authorization_url: "https://example.com/auth?client_id=cid",
+                                           redirect_port: 8089, wait_for_callback: "auth-code")
       allow(mock_flow).to receive(:exchange_code).with("auth-code").and_return(
         access_token: "new-access",
         refresh_token: "new-refresh",
-        expires_at: 1800000000
+        expires_at: 1_800_000_000
       )
 
       server = instance_double(TCPServer)
@@ -264,10 +265,10 @@ RSpec.describe MailTool::CLI do
 
     it "reports error when oauth2 settings are missing" do
       output = capture_stderr do
-        expect {
+        expect do
           described_class.start(["authorize", "--config", config_path,
-            "--server", "s", "--username", "u"])
-        }.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
+                                 "--server", "s", "--username", "u"])
+        end.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
       end
 
       expect(output).to include("auth_type must be 'xoauth2'")

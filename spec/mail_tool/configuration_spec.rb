@@ -10,14 +10,14 @@ RSpec.describe MailTool::Configuration do
       expect(config.port).to eq(993)
       expect(config.username).to eq("user@example.com")
       expect(config.password).to eq("secret")
-      expect(config.ssl).to eq(true)
+      expect(config.ssl).to be(true)
     end
 
     it "uses defaults for port and ssl when not in config file" do
       config = described_class.load(config_path: nil)
 
       expect(config.port).to eq(993)
-      expect(config.ssl).to eq(true)
+      expect(config.ssl).to be(true)
     end
 
     it "returns defaults when config file does not exist" do
@@ -25,7 +25,7 @@ RSpec.describe MailTool::Configuration do
 
       expect(config.server).to be_nil
       expect(config.port).to eq(993)
-      expect(config.ssl).to eq(true)
+      expect(config.ssl).to be(true)
     end
   end
 
@@ -38,7 +38,7 @@ RSpec.describe MailTool::Configuration do
 
       expect(config.server).to eq("other.example.com")
       expect(config.port).to eq(143)
-      expect(config.ssl).to eq(false)
+      expect(config.ssl).to be(false)
       expect(config.username).to eq("user@example.com")
       expect(config.password).to eq("secret")
     end

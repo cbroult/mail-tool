@@ -14,6 +14,8 @@ A Ruby CLI tool that connects to IMAP servers to list and rename mail folders. T
 | Unit testing | RSpec (~> 3.13) |
 | BDD / Acceptance testing | Cucumber (~> 9.0) + Aruba (~> 2.3) |
 | Credentials | Config file (`~/.config/mail-tool/config.yml`) + CLI flags (flags override config) |
+| Static analysis | RuboCop (~> 1.75) + rubocop-rspec (~> 3.5) + rubocop-rake (~> 0.6) |
+| Dependency audit | bundler-audit (~> 0.9) |
 
 ## Project Structure
 
@@ -21,6 +23,7 @@ A Ruby CLI tool that connects to IMAP servers to list and rename mail folders. T
 mail-tool/
   .gitignore
   .rspec
+  .rubocop.yml                   # RuboCop configuration (tuned for existing style)
   Gemfile
   Rakefile
   mail-tool.gemspec
@@ -150,11 +153,14 @@ BDD specification-by-example tests that exercise the full CLI as a subprocess.
   1. **BDD outer loop**: Write or update Cucumber scenarios first to define the desired behavior
   2. **TDD inner loop**: Write or update RSpec unit tests, then implement the production code (red-green-refactor)
   3. Verify all tests pass with `bundle exec rake` before considering the work done
-- Run all tests: `bundle exec rake` (runs both rspec and cucumber)
+- Run all tests + lint: `bundle exec rake` (runs rspec, cucumber, rubocop, and bundler-audit)
 - Run unit tests: `bundle exec rspec`
 - Run acceptance tests: `bundle exec cucumber`
 - Run specific spec: `bundle exec rspec spec/mail_tool/configuration_spec.rb`
 - Run specific feature: `bundle exec cucumber features/list_folders.feature`
+- Run linter: `bundle exec rubocop` (auto-correct with `-A`)
+- Run dependency audit: `bundle exec bundler-audit check`
+- Run all static analysis: `bundle exec rake lint`
 - Run CLI: `bundle exec mail-tool list`
 
 ## Implementation Order (BDD + TDD)
@@ -167,6 +173,13 @@ BDD specification-by-example tests that exercise the full CLI as a subprocess.
 6. **RenameFolders command** — RSpec tests first, then implementation ✅
 7. **CLI layer** — wire commands to Thor, make Cucumber scenarios pass ✅
 8. **Polish** — git init, final `bundle exec rake` run ✅
+
+## Static Analysis
+
+- **RuboCop** (`.rubocop.yml`): configured to match existing code style (double quotes, no frozen string literal comments, relaxed metrics for CLI methods). Uses `plugins` format for rubocop-rspec and rubocop-rake extensions.
+- **bundler-audit**: checks for known vulnerabilities in gem dependencies.
+- The `rake` default task runs: `spec` → `features` → `lint` (rubocop + audit). Tests run first for faster feedback.
+- All code must pass `bundle exec rubocop` with zero offenses before merging.
 
 ## Environment Notes
 

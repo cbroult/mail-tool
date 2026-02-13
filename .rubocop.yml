@@ -1,0 +1,90 @@
+plugins:
+  - rubocop-rspec
+  - rubocop-rake
+
+AllCops:
+  TargetRubyVersion: 3.0
+  NewCops: enable
+  SuggestExtensions: false
+
+# --- Style ---
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+# --- Metrics ---
+
+Metrics/MethodLength:
+  Max: 30
+  CountAsOne:
+    - heredoc
+    - hash
+    - array
+
+Metrics/AbcSize:
+  Max: 35
+
+Metrics/CyclomaticComplexity:
+  Max: 8
+
+Metrics/ClassLength:
+  Max: 155
+
+Metrics/BlockLength:
+  Exclude:
+    - "spec/**/*"
+    - "features/**/*"
+    - "Rakefile"
+    - "*.gemspec"
+
+# --- Lint ---
+
+Lint/NonLocalExitFromIterator:
+  Enabled: false
+
+Lint/EmptyBlock:
+  Exclude:
+    - "spec/**/*"
+
+# --- Naming ---
+
+Naming/MethodParameterName:
+  AllowedNames:
+    - e
+    - f
+    - to
+
+# --- Gemspec ---
+
+Gemspec/DevelopmentDependencies:
+  Enabled: false
+
+# --- RSpec ---
+
+RSpec/MultipleExpectations:
+  Max: 8
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Max: 25
+
+RSpec/AnyInstance:
+  Enabled: false
+
+RSpec/MessageSpies:
+  Enabled: false
+
+RSpec/SpecFilePathFormat:
+  CustomTransform:
+    OAuth2Flow: oauth2_flow

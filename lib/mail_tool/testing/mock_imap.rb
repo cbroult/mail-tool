@@ -14,10 +14,10 @@ module MailTool
         end
       end
 
-      def rename(from, to)
-        if @rename_errors.key?(from)
-          raise Net::IMAP::BadResponseError, @rename_errors[from]
-        end
+      def rename(from, _to)
+        return unless @rename_errors.key?(from)
+
+        raise Net::IMAP::BadResponseError, @rename_errors[from]
       end
 
       def login(_username, _password); end

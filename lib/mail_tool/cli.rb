@@ -142,23 +142,23 @@ module MailTool
     def create_default_config(path)
       FileUtils.mkdir_p(File.dirname(path))
       File.write(path, YAML.dump(
-        "server" => "imap.example.com",
-        "port" => 993,
-        "username" => "user@example.com",
-        "password" => "secret",
-        "ssl" => true
-      ))
+                         "server" => "imap.example.com",
+                         "port" => 993,
+                         "username" => "user@example.com",
+                         "password" => "secret",
+                         "ssl" => true
+                       ))
       say "Config file created at #{path} — edit it with your IMAP settings."
       exit 1
     end
 
     def config_overrides
       overrides = {
-        server:   options[:server],
-        port:     options[:port],
+        server: options[:server],
+        port: options[:port],
         username: options[:username],
         password: options[:password],
-        ssl:      options[:ssl]
+        ssl: options[:ssl]
       }
       overrides[:token_store] = options[:token_store] if options[:token_store]
       overrides
@@ -179,12 +179,12 @@ module MailTool
     end
 
     def abort_with(message)
-      $stderr.puts "Error: #{message}"
+      warn "Error: #{message}"
       exit 1
     end
 
     def attempt_open_browser(url)
-      system("xdg-open", url, [:out, :err] => "/dev/null")
+      system("xdg-open", url, %i[out err] => "/dev/null")
     rescue StandardError
       nil
     end

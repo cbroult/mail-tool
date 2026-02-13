@@ -24,9 +24,8 @@ module MailTool
 
     def refresh_token(access_token, refresh_token)
       token = OAuth2::AccessToken.from_hash(client,
-        "access_token" => access_token,
-        "refresh_token" => refresh_token
-      )
+                                            "access_token" => access_token,
+                                            "refresh_token" => refresh_token)
       new_token = token.refresh!
       extract_tokens(new_token)
     end
@@ -51,9 +50,7 @@ module MailTool
       server.close
     end
 
-    def redirect_port
-      @redirect_port
-    end
+    attr_reader :redirect_port
 
     private
 
