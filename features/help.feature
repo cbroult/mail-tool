@@ -34,6 +34,12 @@ Feature: CLI help
     And the output should contain "Rename folders matching PATTERN"
     And the exit status should be 0
 
+  Scenario: Direct invocation works without Bundler env
+    Given an unbundled environment
+    When I run `mail-tool help`
+    Then the output should contain "mail-tool help"
+    And the exit status should be 0
+
   Scenario: Help for unknown command
     When I run `mail-tool help nonexistent`
     Then the output should contain "Could not find command"
