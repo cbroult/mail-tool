@@ -1,3 +1,4 @@
+require "fileutils"
 require "socket"
 
 module MailTool
@@ -105,8 +106,9 @@ module MailTool
     private
 
     def build_config
+      config_path = resolve_config_path
       config = Configuration.load(
-        config_path: options[:config],
+        config_path: config_path,
         overrides: config_overrides
       )
       config.validate!
@@ -114,8 +116,9 @@ module MailTool
     end
 
     def build_config_for_authorize
+      config_path = resolve_config_path
       config = Configuration.load(
-        config_path: options[:config],
+        config_path: config_path,
         overrides: config_overrides
       )
 
@@ -125,6 +128,28 @@ module MailTool
 
       config.validate!
       config
+    end
+
+    def resolve_config_path
+      return options[:config] if options[:config]
+
+      default_path = Configuration.default_config_path
+      return default_path if File.exist?(default_path)
+
+      create_default_config(default_path)
+    end
+
+    def create_default_config(path)
+      FileUtils.mkdir_p(File.dirname(path))
+      File.write(path, YAML.dump(
+        "server" => "imap.example.com",
+        "port" => 993,
+        "username" => "user@example.com",
+        "password" => "secret",
+        "ssl" => true
+      ))
+      say "Config file created at #{path} — edit it with your IMAP settings."
+      exit 1
     end
 
     def config_overrides

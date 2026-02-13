@@ -86,6 +86,13 @@ RSpec.describe MailTool::Configuration do
     end
   end
 
+  describe ".default_config_path" do
+    it "returns ~/.config/mail-tool/config.yml" do
+      expected = File.join(Dir.home, ".config", "mail-tool", "config.yml")
+      expect(described_class.default_config_path).to eq(expected)
+    end
+  end
+
   describe "OAuth2 configuration" do
     it "defaults auth_type to basic" do
       config = described_class.load(config_path: fixture_path)
@@ -93,10 +100,10 @@ RSpec.describe MailTool::Configuration do
       expect(config.auth_type).to eq("basic")
     end
 
-    it "defaults token_store to ~/.mail-tool-tokens.yml" do
+    it "defaults token_store to ~/.config/mail-tool/tokens.yml" do
       config = described_class.load(config_path: fixture_path)
 
-      expect(config.token_store).to eq("~/.mail-tool-tokens.yml")
+      expect(config.token_store).to eq(File.join(Dir.home, ".config", "mail-tool", "tokens.yml"))
     end
 
     it "loads OAuth2 settings from config file" do

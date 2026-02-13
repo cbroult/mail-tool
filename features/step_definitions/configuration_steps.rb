@@ -59,3 +59,23 @@ end
 Given("no token store file exists") do
   # token_store path in config points to a non-existent file
 end
+
+Given("a config file at the default location with valid credentials") do
+  config_content = {
+    "server" => "imap.example.com",
+    "port" => 993,
+    "username" => "user@example.com",
+    "password" => "secret",
+    "ssl" => true
+  }
+  fake_home = expand_path(".")
+  default_config_path = File.join(".config", "mail-tool", "config.yml")
+  write_file(default_config_path, YAML.dump(config_content))
+  set_environment_variable("HOME", fake_home)
+end
+
+Given("no default config directory exists") do
+  fake_home = expand_path(".")
+  set_environment_variable("HOME", fake_home)
+  # .config/mail-tool/ does not exist in Aruba's working directory
+end

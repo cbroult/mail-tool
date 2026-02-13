@@ -64,6 +64,58 @@ RSpec.describe MailTool::CLI do
 
       expect(output).to include("server is required")
     end
+
+    it "uses default config path when --config is not given" do
+      allow(mock_imap).to receive(:list).with("", "*").and_return([mailbox("INBOX")])
+
+      fake_home = Dir.mktmpdir("mail-tool-cli-test")
+      default_dir = File.join(fake_home, ".config", "mail-tool")
+      FileUtils.mkdir_p(default_dir)
+      File.write(File.join(default_dir, "config.yml"), YAML.dump(
+        "server" => "imap.example.com", "username" => "user@example.com",
+        "password" => "secret", "port" => 993, "ssl" => true
+      ))
+
+      output = nil
+      begin
+        original_home = ENV["HOME"]
+        ENV["HOME"] = fake_home
+
+        output = capture_stdout do
+          described_class.start(["list"])
+        end
+      ensure
+        ENV["HOME"] = original_home
+        FileUtils.rm_rf(fake_home)
+      end
+
+      expect(output).to include("INBOX")
+    end
+
+    it "auto-creates default config template when no config exists" do
+      fake_home = Dir.mktmpdir("mail-tool-cli-test")
+
+      begin
+        original_home = ENV["HOME"]
+        ENV["HOME"] = fake_home
+
+        output = capture_stdout do
+          expect {
+            described_class.start(["list"])
+          }.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
+        end
+
+        expect(output).to include("Config file created at")
+      ensure
+        ENV["HOME"] = original_home
+      end
+
+      template_path = File.join(fake_home, ".config", "mail-tool", "config.yml")
+      expect(File.exist?(template_path)).to be true
+      content = YAML.safe_load_file(template_path)
+      expect(content["server"]).to eq("imap.example.com")
+      FileUtils.rm_rf(fake_home)
+    end
   end
 
   describe "rename" do
