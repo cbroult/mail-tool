@@ -1,4 +1,3 @@
-* Check that the estimated time when displaying progress is properly implemented
 * Add a fully integrated stage in the CI pipeline/rake task where some of the feature scenarios are testing
   using an actual IMAP server (i.e., not mocked). The selected scenarios should be representative of the features, so
   that we have an increased confidence in the implementation (i.e., reduce the risk of discovering bugs after
