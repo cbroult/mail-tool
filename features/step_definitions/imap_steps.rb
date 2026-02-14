@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Given("the IMAP hierarchy delimiter is {string}") do |delimiter|
   @mock_state["delimiter"] = delimiter
   sync_mock!

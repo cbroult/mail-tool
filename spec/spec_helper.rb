@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "mail_tool"
 
 RSpec.configure do |config|

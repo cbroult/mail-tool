@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "aruba/cucumber"
 
 PROJECT_ROOT = File.expand_path("../..", __dir__)

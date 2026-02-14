@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "oauth2"
 
 RSpec.describe MailTool::OAuth2Flow do

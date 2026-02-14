@@ -16,7 +16,7 @@ Style/StringLiteralsInInterpolation:
   EnforcedStyle: double_quotes
 
 Style/FrozenStringLiteralComment:
-  Enabled: false
+  Enabled: true
 
 Style/Documentation:
   Enabled: false
