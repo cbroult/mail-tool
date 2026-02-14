@@ -4,6 +4,7 @@ require "yaml"
 
 module MailTool
   VERSION = "0.1.0".freeze
+  DEFAULT_HIERARCHY_DELIMITER = "/".freeze
 
   class Error < StandardError; end
   class ConfigurationError < Error; end

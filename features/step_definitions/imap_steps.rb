@@ -1,3 +1,8 @@
+Given("the IMAP hierarchy delimiter is {string}") do |delimiter|
+  @mock_state["delimiter"] = delimiter
+  sync_mock!
+end
+
 Given("the IMAP server has the following folders:") do |table|
   @mock_state["folders"] = table.raw.flatten
   sync_mock!

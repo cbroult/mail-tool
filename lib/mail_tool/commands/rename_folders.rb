@@ -23,10 +23,11 @@ module MailTool
       private
 
       def build_plan(folders)
+        delimiter = folders.first&.delim || DEFAULT_HIERARCHY_DELIMITER
         folders
           .map { |f| { from: f.name, to: f.name.gsub(@pattern, @replacement) } }
           .reject { |r| r[:from] == r[:to] }
-          .sort_by { |r| [-r[:from].count("/"), r[:from]] }
+          .sort_by { |r| [-r[:from].count(delimiter), r[:from]] }
       end
 
       def execute(planned)
