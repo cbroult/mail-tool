@@ -1,5 +1,8 @@
 # mail-tool
 
+[![CI](https://github.com/cbroult/mail-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/cbroult/mail-tool/actions/workflows/ci.yml)
+[![Dependabot](https://img.shields.io/badge/dependabot-enabled-brightgreen?logo=dependabot)](https://github.com/cbroult/mail-tool/network/updates)
+
 A Ruby CLI for IMAP folder management. List and batch rename mail folders using regex patterns with backreference support.
 
 ## Requirements
