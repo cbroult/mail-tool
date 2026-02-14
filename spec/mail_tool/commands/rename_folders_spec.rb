@@ -1,8 +1,8 @@
 RSpec.describe MailTool::Commands::RenameFolders do
   let(:mock_imap) { instance_double(Net::IMAP) }
 
-  def mailbox(name)
-    Net::IMAP::MailboxList.new([:Hasnochildren], ".", name)
+  def mailbox(name, delimiter: MailTool::DEFAULT_HIERARCHY_DELIMITER)
+    Net::IMAP::MailboxList.new([:Hasnochildren], delimiter, name)
   end
 
   before do
@@ -121,13 +121,10 @@ RSpec.describe MailTool::Commands::RenameFolders do
       allow(mock_imap).to receive(:list).with("", "*").and_return(folders)
 
       rename_order = []
-      allow(mock_imap).to receive(:rename) do |from, _to|
+      allow(mock_imap).to receive(:rename) do |from, to|
         rename_order << from
-        # Simulate IMAP server: after renaming parent, children paths change
         folders.each do |f|
-          if f.name.start_with?("#{from}/")
-            f.instance_variable_set(:@name, f.name.sub(from, _to))
-          end
+          f.instance_variable_set(:@name, f.name.sub(from, to)) if f.name.start_with?("#{from}/")
         end
       end
 
@@ -137,6 +134,24 @@ RSpec.describe MailTool::Commands::RenameFolders do
       expect(result.renamed_count).to eq(3)
       expect(result.errors).to be_empty
       expect(rename_order).to eq(["00.foo/10.bar", "00.foo/20.baz", "00.foo"])
+    end
+
+    it "renames children before parents with dot hierarchy delimiter" do
+      folders = [
+        mailbox("A", delimiter: "."),
+        mailbox("A.B", delimiter: "."),
+        mailbox("A.B.C", delimiter: ".")
+      ]
+      allow(mock_imap).to receive(:list).with("", "*").and_return(folders)
+
+      rename_order = []
+      allow(mock_imap).to receive(:rename) { |from, _to| rename_order << from }
+
+      cmd = described_class.new(mock_imap, pattern: /A/, replacement: "X")
+      result = cmd.call(dry_run: false)
+
+      expect(result.renamed_count).to eq(3)
+      expect(rename_order).to eq(["A.B.C", "A.B", "A"])
     end
 
     it "reports renamed count on success" do

@@ -3,16 +3,15 @@ require "json"
 module MailTool
   module Testing
     class MockImap
-      HIERARCHY_DELIMITER = "/"
-
       def initialize(mock_path)
         @state = JSON.parse(File.read(mock_path))
         @rename_errors = @state.fetch("rename_errors", {})
+        @delimiter = @state.fetch("delimiter", MailTool::DEFAULT_HIERARCHY_DELIMITER)
       end
 
       def list(_refname, _mailbox)
         @state.fetch("folders", []).map do |name|
-          Net::IMAP::MailboxList.new([:Hasnochildren], HIERARCHY_DELIMITER, name)
+          Net::IMAP::MailboxList.new([:Hasnochildren], @delimiter, name)
         end
       end
 
@@ -33,12 +32,12 @@ module MailTool
           raise Net::IMAP::BadResponseError, bad_resp
         end
 
-        prefix = "#{from}#{HIERARCHY_DELIMITER}"
+        prefix = "#{from}#{@delimiter}"
         @state["folders"] = folders.map do |name|
           if name == from
             to
           elsif name.start_with?(prefix)
-            "#{to}#{HIERARCHY_DELIMITER}#{name.delete_prefix(prefix)}"
+            "#{to}#{@delimiter}#{name.delete_prefix(prefix)}"
           else
             name
           end
