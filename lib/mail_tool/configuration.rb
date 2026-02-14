@@ -5,12 +5,13 @@ module MailTool
     DEFAULT_CONFIG_DIR = File.join(Dir.home, ".config", "mail-tool")
     DEFAULT_CONFIG_PATH = File.join(DEFAULT_CONFIG_DIR, "config.yml")
     DEFAULTS = { port: 993, ssl: true, auth_type: "basic",
-                 token_store: File.join(DEFAULT_CONFIG_DIR, "tokens.yml") }.freeze
+                 token_store: File.join(DEFAULT_CONFIG_DIR, "tokens.yml"),
+                 progress: MailTool::Progress::DEFAULT_LEVEL }.freeze
     REQUIRED = %i[server username].freeze
     OAUTH2_REQUIRED = %w[client_id client_secret authorize_url token_url].freeze
 
     attr_accessor :server, :port, :username, :password, :ssl,
-                  :auth_type, :oauth2, :token_store
+                  :auth_type, :oauth2, :token_store, :progress
 
     def self.default_config_path
       File.join(Dir.home, ".config", "mail-tool", "config.yml")

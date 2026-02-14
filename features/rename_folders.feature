@@ -133,3 +133,78 @@ Feature: Rename mail folders
     When I run `mail-tool rename "[invalid" "replacement" --dry-run --config tmp/mail-tool.yml`
     Then the output should contain "Invalid regex"
     And the exit status should be 1
+
+  Scenario: Rename with silent progress shows only summary
+    Given the IMAP server has the following folders:
+      | Temp.A |
+      | Temp.B |
+    When I run `mail-tool rename "^Temp\." "Done." --yes --no-dry-run --progress silent --config tmp/mail-tool.yml`
+    Then the output should contain "Renamed 2 folder(s)"
+    And the output should not contain "Renamed Temp.A"
+    And the output should not contain "FAILED"
+    And the exit status should be 0
+
+  Scenario: Rename with log progress shows per-folder results
+    Given the IMAP server has the following folders:
+      | Temp.A |
+      | Temp.B |
+    When I run `mail-tool rename "^Temp\." "Done." --yes --no-dry-run --progress log --config tmp/mail-tool.yml`
+    Then the output should contain "Renamed Temp.A -> Done.A"
+    And the output should contain "Renamed Temp.B -> Done.B"
+    And the output should contain "Renamed 2 folder(s)"
+    And the exit status should be 0
+
+  Scenario: Rename with inline progress shows per-folder results (non-TTY fallback)
+    Given the IMAP server has the following folders:
+      | Temp.A |
+      | Temp.B |
+    When I run `mail-tool rename "^Temp\." "Done." --yes --no-dry-run --progress inline --config tmp/mail-tool.yml`
+    Then the output should contain "Renamed Temp.A -> Done.A"
+    And the output should contain "Renamed Temp.B -> Done.B"
+    And the output should contain "Renamed 2 folder(s)"
+    And the exit status should be 0
+
+  Scenario: Rename with progress_bar shows progress (default)
+    Given the IMAP server has the following folders:
+      | Temp.A |
+      | Temp.B |
+    When I run `mail-tool rename "^Temp\." "Done." --yes --no-dry-run --config tmp/mail-tool.yml`
+    Then the output should contain "Renamed 2 folder(s)"
+    And the exit status should be 0
+
+  Scenario: Rename with log progress reports per-folder failures
+    Given the IMAP server has the following folders:
+      | Move.A |
+      | Move.B |
+      | Move.C |
+    And renaming "Move.B" will fail with "Permission denied"
+    When I run `mail-tool rename "^Move\." "Done." --yes --no-dry-run --progress log --config tmp/mail-tool.yml`
+    Then the output should contain "Renamed Move.A -> Done.A"
+    And the output should contain "FAILED Move.B -> Done.B: Permission denied"
+    And the output should contain "Renamed Move.C -> Done.C"
+    And the output should contain "Failed to rename Move.B"
+    And the exit status should be 0
+
+  Scenario: Progress level from config file
+    Given a config file with progress set to "log"
+    And the IMAP server has the following folders:
+      | Temp.A |
+    When I run `mail-tool rename "^Temp\." "Done." --yes --no-dry-run --config tmp/mail-tool.yml`
+    Then the output should contain "Renamed Temp.A -> Done.A"
+    And the output should contain "Renamed 1 folder(s)"
+    And the exit status should be 0
+
+  Scenario: CLI --progress flag overrides config file
+    Given a config file with progress set to "silent"
+    And the IMAP server has the following folders:
+      | Temp.A |
+    When I run `mail-tool rename "^Temp\." "Done." --yes --no-dry-run --progress log --config tmp/mail-tool.yml`
+    Then the output should contain "Renamed Temp.A -> Done.A"
+    And the exit status should be 0
+
+  Scenario: Invalid progress level
+    Given the IMAP server has the following folders:
+      | INBOX |
+    When I run `mail-tool rename "^Temp\." "Done." --yes --no-dry-run --progress bogus --config tmp/mail-tool.yml`
+    Then the output should contain "Invalid progress level"
+    And the exit status should be 1

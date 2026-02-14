@@ -81,3 +81,15 @@ Given("no default config directory exists") do
   set_environment_variable("HOME", fake_home)
   # .config/mail-tool/ does not exist in Aruba's working directory
 end
+
+Given("a config file with progress set to {string}") do |level|
+  config_content = {
+    "server" => "imap.example.com",
+    "port" => 993,
+    "username" => "user@example.com",
+    "password" => "secret",
+    "ssl" => true,
+    "progress" => level
+  }
+  write_file("tmp/mail-tool.yml", YAML.dump(config_content))
+end
