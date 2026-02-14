@@ -11,7 +11,8 @@ RuboCop::RakeTask.new(:rubocop)
 desc "Check for vulnerable gems"
 task :audit do
   require "bundler/audit/cli"
-  %w[update check].each { |cmd| Bundler::Audit::CLI.start([cmd]) }
+  Bundler::Audit::Database.update!(quiet: true)
+  Bundler::Audit::CLI.start(["check"])
 end
 
 desc "Run all static analysis"
