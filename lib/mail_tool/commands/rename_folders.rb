@@ -11,14 +11,14 @@ module MailTool
         @replacement = replacement
       end
 
-      def call(dry_run: false)
+      def call(dry_run: false, &on_progress)
         folders = @imap.list("", "*") || []
         planned = build_plan(folders)
 
         if dry_run
           Result.new(planned: planned, renamed_count: 0, errors: [])
         else
-          execute(planned)
+          execute(planned, &on_progress)
         end
       end
 
@@ -32,15 +32,17 @@ module MailTool
           .sort_by { |r| [-r[:from].count(delimiter), r[:from]] }
       end
 
-      def execute(planned)
+      def execute(planned, &on_progress)
         errors = []
         renamed = 0
 
         planned.each do |rename|
           @imap.rename(rename[:from], rename[:to])
           renamed += 1
+          on_progress&.call(rename, :ok, nil)
         rescue StandardError => e
           errors << { folder: rename[:from], error: e.message }
+          on_progress&.call(rename, :error, e.message)
         end
 
         Result.new(planned: planned, renamed_count: renamed, errors: errors)

@@ -40,9 +40,11 @@ module MailTool
     desc "rename PATTERN REPLACEMENT", "Rename folders matching PATTERN"
     option :dry_run, type: :boolean, default: true, desc: "Preview changes without renaming"
     option :yes, type: :boolean, default: false, desc: "Skip confirmation"
+    option :progress, type: :string, desc: "Progress display level (silent, log, inline, progress_bar)"
     def rename(pattern_str, replacement)
       config = build_config
       pattern = parse_pattern(pattern_str)
+      display = Progress.build(config.progress, output: $stdout)
 
       Connection.connect(config) do |imap|
         cmd = Commands::RenameFolders.new(imap, pattern: pattern, replacement: replacement)
@@ -67,11 +69,7 @@ module MailTool
           return
         end
 
-        result = cmd.call(dry_run: false)
-        say "Renamed #{result.renamed_count} folder(s)"
-        result.errors.each do |err|
-          say "Failed to rename #{err[:folder]}: #{err[:error]}"
-        end
+        execute_renames(cmd, display, result.planned)
       end
     rescue MailTool::Error => e
       abort_with(e.message)
@@ -112,6 +110,7 @@ module MailTool
       username: user@example.com
       password: secret
       ssl: true
+      # progress: progress_bar
       # auth_type: xoauth2
       # token_store: ~/.config/mail-tool/tokens.yml
       # oauth2:
@@ -124,6 +123,16 @@ module MailTool
     YAML
 
     private
+
+    def execute_renames(cmd, display, planned)
+      display.start(planned)
+      result = cmd.call(dry_run: false) { |rename, status, error| display.on_rename(rename, status, error) }
+      display.finish
+      say "Renamed #{result.renamed_count} folder(s)"
+      result.errors.each do |err|
+        say "Failed to rename #{err[:folder]}: #{err[:error]}"
+      end
+    end
 
     def build_config
       config_path = resolve_config_path
@@ -176,6 +185,7 @@ module MailTool
       }
       overrides[:auth_type] = options[:auth_type] if options[:auth_type]
       overrides[:token_store] = options[:token_store] if options[:token_store]
+      overrides[:progress] = options[:progress] if options[:progress]
       overrides
     end
 

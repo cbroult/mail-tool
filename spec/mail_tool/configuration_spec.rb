@@ -189,4 +189,19 @@ RSpec.describe MailTool::Configuration do
       expect(config.token_store).to eq("/custom/path.yml")
     end
   end
+
+  describe "progress setting" do
+    it "defaults to progress_bar" do
+      config = described_class.load(config_path: nil)
+      expect(config.progress).to eq("progress_bar")
+    end
+
+    it "loads progress from config file" do
+      config = described_class.load(
+        config_path: fixture_path,
+        overrides: { progress: "log" }
+      )
+      expect(config.progress).to eq("log")
+    end
+  end
 end

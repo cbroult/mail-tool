@@ -164,5 +164,41 @@ RSpec.describe MailTool::Commands::RenameFolders do
       expect(result.renamed_count).to eq(2)
       expect(result.errors).to be_empty
     end
+
+    it "yields :ok status for each successful rename" do
+      cmd = described_class.new(mock_imap, pattern: /^OldPrefix\./, replacement: "NewPrefix.")
+      callbacks = []
+
+      cmd.call(dry_run: false) { |rename, status, error| callbacks << [rename, status, error] }
+
+      expect(callbacks).to eq([
+                                [{ from: "OldPrefix.Folder1", to: "NewPrefix.Folder1" }, :ok, nil],
+                                [{ from: "OldPrefix.Folder2", to: "NewPrefix.Folder2" }, :ok, nil]
+                              ])
+    end
+
+    it "yields :error status for failed renames" do
+      bad_response = Net::IMAP::TaggedResponse.new(
+        "BAD", "BAD", Net::IMAP::ResponseText.new(nil, "Denied"), nil
+      )
+      allow(mock_imap).to receive(:rename).with("OldPrefix.Folder1", "NewPrefix.Folder1")
+      allow(mock_imap).to receive(:rename).with("OldPrefix.Folder2", "NewPrefix.Folder2")
+                                          .and_raise(Net::IMAP::BadResponseError.new(bad_response))
+
+      cmd = described_class.new(mock_imap, pattern: /^OldPrefix\./, replacement: "NewPrefix.")
+      callbacks = []
+
+      cmd.call(dry_run: false) { |rename, status, error| callbacks << [rename, status, error] }
+
+      expect(callbacks[0]).to eq([{ from: "OldPrefix.Folder1", to: "NewPrefix.Folder1" }, :ok, nil])
+      expect(callbacks[1][1]).to eq(:error)
+      expect(callbacks[1][2]).to include("Denied")
+    end
+
+    it "does not yield when no block given" do
+      cmd = described_class.new(mock_imap, pattern: /^OldPrefix\./, replacement: "NewPrefix.")
+
+      expect { cmd.call(dry_run: false) }.not_to raise_error
+    end
   end
 end

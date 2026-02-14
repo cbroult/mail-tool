@@ -14,6 +14,7 @@ module MailTool
   class AuthenticationError < Error; end
 end
 
+require "mail_tool/progress"
 require "mail_tool/configuration"
 require "mail_tool/token_store"
 require "mail_tool/oauth2_flow"

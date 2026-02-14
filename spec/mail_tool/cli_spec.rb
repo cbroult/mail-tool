@@ -144,6 +144,7 @@ RSpec.describe MailTool::CLI do
 
   describe "rename" do
     before do
+      allow(TTY::Screen).to receive(:width).and_return(80)
       allow(mock_imap).to receive(:list).with("", "*").and_return([
                                                                     mailbox("Old.Folder1"),
                                                                     mailbox("Old.Folder2"),
@@ -242,6 +243,38 @@ RSpec.describe MailTool::CLI do
 
       expect(output).to include("Renamed 1 folder(s)")
       expect(output).to include("Failed to rename Old.Folder2")
+    end
+
+    it "uses silent progress when --progress silent is given" do
+      output = capture_stdout do
+        described_class.start(["rename", "^Old\\.", "New.", "--yes", "--no-dry-run",
+                               "--progress", "silent", "--config", config_path])
+      end
+
+      expect(output).to include("Renamed 2 folder(s)")
+      expect(output).not_to include("Renamed Old.Folder1")
+    end
+
+    it "uses log progress when --progress log is given" do
+      output = capture_stdout do
+        described_class.start(["rename", "^Old\\.", "New.", "--yes", "--no-dry-run",
+                               "--progress", "log", "--config", config_path])
+      end
+
+      expect(output).to include("Renamed Old.Folder1 -> New.Folder1")
+      expect(output).to include("Renamed Old.Folder2 -> New.Folder2")
+      expect(output).to include("Renamed 2 folder(s)")
+    end
+
+    it "exits with error on invalid progress level" do
+      output = capture_stderr do
+        expect do
+          described_class.start(["rename", "^Old\\.", "New.", "--yes", "--no-dry-run",
+                                 "--progress", "bogus", "--config", config_path])
+        end.to raise_error(SystemExit) { |e| expect(e.status).to eq(1) }
+      end
+
+      expect(output).to include("Invalid progress level")
     end
   end
 
