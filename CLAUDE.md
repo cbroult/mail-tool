@@ -152,9 +152,12 @@ BDD specification-by-example tests that exercise the full CLI as a subprocess.
 ## Code Style
 
 - Use comments sparingly. Only comment complex code.
+- Use conventional commit messages (see [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)) are expected.
+- Commits should be signed (e.g., GPG key, SSH key, S/MIME cert).
 
 ## Development Workflow
 
+- Changes should be committed to a branch, then merged to `main` via PR.
 - **Always follow BDD/TDD loops when making changes:**
   1. **BDD outer loop**: Write or update Cucumber scenarios first to define the desired behavior
   2. **TDD inner loop**: Write or update RSpec unit tests, then implement the production code (red-green-refactor)
