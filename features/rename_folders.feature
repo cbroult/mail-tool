@@ -102,6 +102,18 @@ Feature: Rename mail folders
     And the output should contain "Cancelled"
     And the output should not contain "Renamed"
 
+  Scenario: Rename nested folders with hierarchy delimiter
+    Given the IMAP server has the following folders:
+      | 00.foo          |
+      | 00.foo/10.bar   |
+      | 00.foo/20.baz   |
+    When I run `mail-tool rename "(\d+)\." "\1 - " --yes --no-dry-run --config tmp/mail-tool.yml`
+    Then the output should contain "00.foo -> 00 - foo"
+    And the output should contain "00.foo/10.bar -> 00 - foo/10 - bar"
+    And the output should contain "00.foo/20.baz -> 00 - foo/20 - baz"
+    And the output should contain "Renamed 3 folder(s)"
+    And the exit status should be 0
+
   Scenario: Invalid regex pattern
     Given the IMAP server has the following folders:
       | INBOX |

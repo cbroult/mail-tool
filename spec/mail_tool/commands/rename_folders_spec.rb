@@ -112,6 +112,33 @@ RSpec.describe MailTool::Commands::RenameFolders do
                                   ])
     end
 
+    it "renames children before parents for nested folders" do
+      folders = [
+        mailbox("00.foo"),
+        mailbox("00.foo/10.bar"),
+        mailbox("00.foo/20.baz")
+      ]
+      allow(mock_imap).to receive(:list).with("", "*").and_return(folders)
+
+      rename_order = []
+      allow(mock_imap).to receive(:rename) do |from, _to|
+        rename_order << from
+        # Simulate IMAP server: after renaming parent, children paths change
+        folders.each do |f|
+          if f.name.start_with?("#{from}/")
+            f.instance_variable_set(:@name, f.name.sub(from, _to))
+          end
+        end
+      end
+
+      cmd = described_class.new(mock_imap, pattern: /(\d+)\./, replacement: '\1 - ')
+      result = cmd.call(dry_run: false)
+
+      expect(result.renamed_count).to eq(3)
+      expect(result.errors).to be_empty
+      expect(rename_order).to eq(["00.foo/10.bar", "00.foo/20.baz", "00.foo"])
+    end
+
     it "reports renamed count on success" do
       cmd = described_class.new(mock_imap, pattern: /^OldPrefix\./, replacement: "NewPrefix.")
 

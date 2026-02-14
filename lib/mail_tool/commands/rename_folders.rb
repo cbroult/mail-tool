@@ -26,7 +26,7 @@ module MailTool
         folders
           .map { |f| { from: f.name, to: f.name.gsub(@pattern, @replacement) } }
           .reject { |r| r[:from] == r[:to] }
-          .sort_by { |r| r[:from] }
+          .sort_by { |r| [-r[:from].count("/"), r[:from]] }
       end
 
       def execute(planned)
