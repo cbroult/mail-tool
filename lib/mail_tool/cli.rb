@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "fileutils"
 require "socket"
 
@@ -104,7 +106,7 @@ module MailTool
       abort_with(e.message)
     end
 
-    DEFAULT_CONFIG_TEMPLATE = <<~YAML.freeze
+    DEFAULT_CONFIG_TEMPLATE = <<~YAML
       server: imap.example.com
       port: 993
       username: user@example.com

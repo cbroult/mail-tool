@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe MailTool::Commands::ListFolders do
   let(:mock_imap) { instance_double(Net::IMAP) }
 

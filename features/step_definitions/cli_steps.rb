@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Given("an unbundled environment") do
   original = Bundler.original_env
   ENV.each_key do |key|

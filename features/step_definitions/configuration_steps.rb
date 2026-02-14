@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Given("a config file with valid credentials") do
   config_content = {
     "server" => "imap.example.com",

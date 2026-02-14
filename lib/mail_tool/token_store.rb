@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module MailTool
   class TokenStore
     EXPIRY_BUFFER = 60

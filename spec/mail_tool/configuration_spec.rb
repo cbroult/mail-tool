@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe MailTool::Configuration do
   let(:fixture_path) { File.expand_path("../fixtures/mail_tool.yml", __dir__) }
   let(:oauth2_fixture_path) { File.expand_path("../fixtures/mail_tool_oauth2.yml", __dir__) }

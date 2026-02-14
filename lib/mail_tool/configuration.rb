@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module MailTool
   class Configuration
     DEFAULT_CONFIG_DIR = File.join(Dir.home, ".config", "mail-tool")
