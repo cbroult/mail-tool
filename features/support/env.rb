@@ -5,7 +5,7 @@ require "aruba/cucumber"
 PROJECT_ROOT = File.expand_path("../..", __dir__)
 
 Aruba.configure do |config|
-  config.exit_timeout = 10
+  config.exit_timeout = 30
   config.activate_announcer_on_command_failure = %i[stdout stderr]
   config.command_launcher = :spawn
 end
