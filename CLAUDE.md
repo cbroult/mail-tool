@@ -152,6 +152,7 @@ BDD specification-by-example tests that exercise the full CLI as a subprocess.
 ## Code Style
 
 - Use comments sparingly. Only comment complex code.
+- Use named constants instead of literal constants.
 - Use conventional commit messages (see [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)).
 - Commits should be signed (e.g., GPG key, SSH key, S/MIME cert).
 
