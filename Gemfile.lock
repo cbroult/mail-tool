@@ -6,6 +6,7 @@ PATH
       oauth2
       thor
       tty-progressbar
+      zeitwerk
 
 GEM
   remote: https://rubygems.org/
@@ -150,6 +151,7 @@ GEM
     unicode-display_width (2.6.0)
     uri (1.1.1)
     version_gem (1.1.9)
+    zeitwerk (2.7.4)
 
 PLATFORMS
   x86_64-linux
@@ -232,6 +234,7 @@ CHECKSUMS
   unicode-display_width (2.6.0) sha256=12279874bba6d5e4d2728cef814b19197dbb10d7a7837a869bab65da943b7f5a
   uri (1.1.1) sha256=379fa58d27ffb1387eaada68c749d1426738bd0f654d812fcc07e7568f5c57c6
   version_gem (1.1.9) sha256=0c1a0962ae543c84a00889bb018d9f14d8f8af6029d26b295d98774e3d2eb9a4
+  zeitwerk (2.7.4) sha256=2bef90f356bdafe9a6c2bd32bcd804f83a4f9b8bc27f3600fff051eb3edcec8b
 
 BUNDLED WITH
   4.0.4

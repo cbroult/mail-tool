@@ -17,6 +17,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "oauth2"
   spec.add_dependency "thor"
   spec.add_dependency "tty-progressbar"
+  spec.add_dependency "zeitwerk"
 
   spec.add_development_dependency "aruba"
   spec.add_development_dependency "bundler-audit"
