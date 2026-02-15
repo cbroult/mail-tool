@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "zeitwerk"
 require "thor"
 require "net/imap"
 require "yaml"
@@ -14,11 +15,7 @@ module MailTool
   class AuthenticationError < Error; end
 end
 
-require "mail_tool/progress"
-require "mail_tool/configuration"
-require "mail_tool/token_store"
-require "mail_tool/oauth2_flow"
-require "mail_tool/connection"
-require "mail_tool/commands/list_folders"
-require "mail_tool/commands/rename_folders"
-require "mail_tool/cli"
+loader = Zeitwerk::Loader.for_gem
+loader.inflector.inflect("cli" => "CLI", "oauth2_flow" => "OAuth2Flow")
+loader.ignore("#{__dir__}/mail_tool/testing")
+loader.setup

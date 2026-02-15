@@ -1,10 +1,5 @@
 # frozen_string_literal: true
 
-require "mail_tool/progress/silent"
-require "mail_tool/progress/log"
-require "mail_tool/progress/inline"
-require "mail_tool/progress/progress_bar"
-
 module MailTool
   module Progress
     LEVELS = %w[silent log inline progress_bar].freeze
